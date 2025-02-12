@@ -30,13 +30,31 @@ jobs:
           libfdk-aac-dev \
           libx264-dev \
           libx265-dev \
-          nasm  # Устанавливаем nasm
+          nasm \
+          yasm # Добавлено для сборки FFmpeg
+
+    - name: Check for required libraries
+      run: |
+        echo "Checking for required libraries..."
+        if ! ldconfig -p | grep -q 'libavcodec.so'; then
+          echo "libavcodec.so is missing!"
+          exit 1
+        fi
+        if ! ldconfig -p | grep -q 'libavformat.so'; then
+          echo "libavformat.so is missing!"
+          exit 1
+        fi
+        if ! ldconfig -p | grep -q 'libavutil.so'; then
+          echo "libavutil.so is missing!"
+          exit 1
+        fi
+        echo "All required libraries are present."
 
     - name: Clone FFmpeg
       run: |
         git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
         cd ffmpeg
-        git checkout release/4.4  # Выбираем стабильную ветку (можно выбрать другую)
+        git checkout release/4.4  # Выбираем стабильную ветку, можешь выбрать другую
 
     - name: Configure FFmpeg with WMV3 support
       run: |
