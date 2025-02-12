@@ -1,49 +1,52 @@
-name: Build FFmpeg 32-bit
+name: Build FFmpeg with WMV3 (WMV9) support
 
 on:
   push:
     branches:
       - main
-  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
-
     steps:
-      - name: Checkout репозитория
-        uses: actions/checkout@v4
+    - name: Checkout code
+      uses: actions/checkout@v2
 
-      - name: Установка зависимостей
-        run: |
-          sudo apt update
-          sudo apt install -y mingw-w64 nasm yasm pkg-config make automake autoconf git
+    - name: Install dependencies
+      run: |
+        sudo apt-get update
+        sudo apt-get install -y \
+          autoconf \
+          automake \
+          build-essential \
+          cmake \
+          git \
+          libtool \
+          pkg-config \
+          texinfo \
+          zlib1g-dev \
+          libvpx-dev \
+          libfdk-aac-dev \
+          libx264-dev \
+          libx265-dev
 
-      - name: Клонирование FFmpeg
-        run: |
-          git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
-          cd ffmpeg
-          git checkout release/6.1  # Используем стабильную версию
+    - name: Clone FFmpeg
+      run: |
+        git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
+        cd ffmpeg
+        git checkout release/4.4  # Выбираем стабильную ветку, можно выбрать другую
 
-      - name: Конфигурация сборки
-        run: |
-          cd ffmpeg
-          ./configure --arch=x86 --target-os=mingw32 --cross-prefix=i686-w64-mingw32- \
-            --enable-gpl --enable-version3 --enable-static --disable-shared --disable-doc \
-            --enable-encoder=wmv3 --enable-decoder=wmv3 --enable-muxer=asf --enable-demuxer=asf
+    - name: Configure FFmpeg with WMV3 support
+      run: |
+        cd ffmpeg
+        ./configure --enable-encoder=wmv3 --enable-static --disable-shared
 
-      - name: Компиляция FFmpeg
-        run: |
-          cd ffmpeg
-          make -j$(nproc)
+    - name: Build FFmpeg
+      run: |
+        cd ffmpeg
+        make -j$(nproc)
+        sudo make install
 
-      - name: Архивация результата
-        run: |
-          cd ffmpeg
-          tar -czf ffmpeg-32bit.tar.gz ffmpeg.exe
-
-      - name: Загрузка артефакта
-        uses: actions/upload-artifact@v4
-        with:
-          name: ffmpeg-32bit
-          path: ffmpeg/ffmpeg-32bit.tar.gz
+    - name: Verify FFmpeg build
+      run: |
+        ffmpeg -codecs | grep wmv3
