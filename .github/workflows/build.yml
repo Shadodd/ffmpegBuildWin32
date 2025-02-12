@@ -8,6 +8,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
+
     steps:
     - name: Checkout code
       uses: actions/checkout@v2
@@ -29,13 +30,13 @@ jobs:
           libfdk-aac-dev \
           libx264-dev \
           libx265-dev \
-          nasm  # Добавление установки nasm
+          nasm  # Устанавливаем nasm
 
     - name: Clone FFmpeg
       run: |
         git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
         cd ffmpeg
-        git checkout release/4.4  # Выбираем стабильную ветку, можно выбрать другую
+        git checkout release/4.4  # Выбираем стабильную ветку (можно выбрать другую)
 
     - name: Configure FFmpeg with WMV3 support
       run: |
@@ -52,17 +53,18 @@ jobs:
       run: |
         ffmpeg -codecs | grep wmv3
 
-    - name: Archive FFmpeg build
+    - name: Create build artifacts
       run: |
         cd ffmpeg
         mkdir -p build_artifacts
         cp /usr/local/bin/ffmpeg build_artifacts/
-        cp /path/to/libavcodec.so build_artifacts/
-        cp /path/to/libavformat.so build_artifacts/
-        cp /path/to/libavutil.so build_artifacts/
+        cp /usr/local/lib/libavcodec.so build_artifacts/
+        cp /usr/local/lib/libavformat.so build_artifacts/
+        cp /usr/local/lib/libavutil.so build_artifacts/
         tar -czf build_artifacts/ffmpeg-build.tar.gz -C build_artifacts .
-    - name: Upload FFmpeg build artifact
-      uses: actions/upload-artifact@v4
+
+    - name: Upload build artifacts
+      uses: actions/upload-artifact@v2
       with:
         name: ffmpeg-build
         path: ffmpeg/build_artifacts/ffmpeg-build.tar.gz
