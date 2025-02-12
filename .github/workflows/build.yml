@@ -35,7 +35,7 @@ jobs:
             --enable-encoder=wmv3 --enable-decoder=wmv3 --enable-muxer=asf --enable-demuxer=asf \
             --enable-encoder=wmv2 --enable-decoder=wmv2 --enable-muxer=wmv \
             --enable-libx264 --enable-libx265 --enable-libmp3lame --enable-libopus --enable-libvorbis \
-            --enable-libvpx --enable-libass --enable-fdk-aac
+            --enable-libvpx --enable-libass
 
       - name: Компиляция FFmpeg
         run: |
