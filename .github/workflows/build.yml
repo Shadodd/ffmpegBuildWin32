@@ -28,7 +28,8 @@ jobs:
           libvpx-dev \
           libfdk-aac-dev \
           libx264-dev \
-          libx265-dev
+          libx265-dev \
+          nasm  # Добавление установки nasm
 
     - name: Clone FFmpeg
       run: |
