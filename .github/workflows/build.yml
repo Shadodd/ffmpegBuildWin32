@@ -1,4 +1,4 @@
-name: Build FFmpeg with WMV3 (WMV9) support
+name: Build FFmpeg for 32-bit Windows on Linux
 
 on:
   push:
@@ -31,67 +31,39 @@ jobs:
           libx264-dev \
           libx265-dev \
           nasm \
-          yasm # Добавлено для сборки FFmpeg
-
-    - name: Check for required libraries
-      run: |
-        sudo apt-get install -y libavcodec-dev libavformat-dev libavutil-dev
-        echo "Checking for required libraries..."
-        
-        # Устанавливаем переменную окружения для поиска библиотек
-        export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
-
-        # Проверяем наличие библиотек
-        if ! ldconfig -p | grep -q 'libavcodec.so'; then
-          echo "libavcodec.so is missing!"
-          exit 1
-        fi
-        if ! ldconfig -p | grep -q 'libavformat.so'; then
-          echo "libavformat.so is missing!"
-          exit 1
-        fi
-        if ! ldconfig -p | grep -q 'libavutil.so'; then
-          echo "libavutil.so is missing!"
-          exit 1
-        fi
-        echo "All required libraries are present."
+          yasm \
+          mingw-w64-i686-toolchain # Устанавливаем MinGW для 32-битных Windows
 
     - name: Clone FFmpeg
       run: |
         git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
         cd ffmpeg
-        git checkout release/4.4  # Выбираем стабильную ветку, можешь выбрать другую
+        git checkout release/4.4  # Выбираем стабильную ветку
 
-    - name: Configure FFmpeg with WMV3 support
+    - name: Configure FFmpeg with WMV3 support for 32-bit Windows
       run: |
         cd ffmpeg
-        ./configure --enable-encoder=wmv3 --enable-static --disable-shared
+        ./configure --prefix=/usr/local --target-os=mingw32 --arch=i386 --enable-encoder=wmv3 --enable-static --disable-shared --cross-prefix=i686-w64-mingw32-
 
-    - name: Build FFmpeg
+    - name: Build FFmpeg for 32-bit Windows
       run: |
         cd ffmpeg
         make -j$(nproc)
-        sudo make install
+        make install
 
     - name: Verify FFmpeg build
       run: |
-        ffmpeg -codecs | grep wmv3
+        i686-w64-mingw32-ffmpeg -codecs | grep wmv3
 
     - name: Create build artifacts
       run: |
         cd ffmpeg
         mkdir -p build_artifacts
-        cp /usr/local/bin/ffmpeg build_artifacts/
-        cp /usr/lib/x86_64-linux-gnu/libavcodec.so build_artifacts/
-        cp /usr/lib/x86_64-linux-gnu/libavformat.so build_artifacts/
-        cp /usr/lib/x86_64-linux-gnu/libavutil.so build_artifacts/
-        # Создаем временную директорию для архивации
-        mkdir -p /tmp/ffmpeg_artifacts
-        mv build_artifacts/* /tmp/ffmpeg_artifacts/
-        # Архивируем файлы в /tmp
-        tar -czf /tmp/ffmpeg-build.tar.gz -C /tmp ffmpeg_artifacts
-        # Перемещаем архив в нужную директорию
-        mv /tmp/ffmpeg-build.tar.gz build_artifacts/
+        cp /usr/local/bin/i686-w64-mingw32-ffmpeg build_artifacts/
+        cp /usr/local/lib/i686-w64-mingw32/libavcodec.a build_artifacts/
+        cp /usr/local/lib/i686-w64-mingw32/libavformat.a build_artifacts/
+        cp /usr/local/lib/i686-w64-mingw32/libavutil.a build_artifacts/
+        tar -czf build_artifacts/ffmpeg-build.tar.gz -C build_artifacts .
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
