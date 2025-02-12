@@ -35,7 +35,13 @@ jobs:
 
     - name: Check for required libraries
       run: |
+        sudo apt-get install -y libavcodec-dev libavformat-dev libavutil-dev
         echo "Checking for required libraries..."
+        
+        # Устанавливаем переменную окружения для поиска библиотек
+        export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+
+        # Проверяем наличие библиотек
         if ! ldconfig -p | grep -q 'libavcodec.so'; then
           echo "libavcodec.so is missing!"
           exit 1
@@ -49,7 +55,6 @@ jobs:
           exit 1
         fi
         echo "All required libraries are present."
-
     - name: Clone FFmpeg
       run: |
         git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
