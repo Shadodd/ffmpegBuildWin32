@@ -57,11 +57,10 @@ jobs:
         cd ffmpeg
         mkdir -p build_artifacts
         cp /usr/local/bin/ffmpeg build_artifacts/
-        cp /usr/local/lib/libavcodec.so build_artifacts/
-        cp /usr/local/lib/libavformat.so build_artifacts/
-        cp /usr/local/lib/libavutil.so build_artifacts/
+        cp /path/to/libavcodec.so build_artifacts/
+        cp /path/to/libavformat.so build_artifacts/
+        cp /path/to/libavutil.so build_artifacts/
         tar -czf build_artifacts/ffmpeg-build.tar.gz -C build_artifacts .
-
     - name: Upload FFmpeg build artifact
       uses: actions/upload-artifact@v4
       with:
