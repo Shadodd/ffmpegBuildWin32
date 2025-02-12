@@ -85,7 +85,13 @@ jobs:
         cp /usr/lib/x86_64-linux-gnu/libavcodec.so build_artifacts/
         cp /usr/lib/x86_64-linux-gnu/libavformat.so build_artifacts/
         cp /usr/lib/x86_64-linux-gnu/libavutil.so build_artifacts/
-        tar -czf build_artifacts/ffmpeg-build.tar.gz -C build_artifacts .
+        # Создаем временную директорию для архивации
+        mkdir -p /tmp/ffmpeg_artifacts
+        mv build_artifacts/* /tmp/ffmpeg_artifacts/
+        # Архивируем файлы в /tmp
+        tar -czf /tmp/ffmpeg-build.tar.gz -C /tmp ffmpeg_artifacts
+        # Перемещаем архив в нужную директорию
+        mv /tmp/ffmpeg-build.tar.gz build_artifacts/
 
     - name: Upload build artifacts
       uses: actions/upload-artifact@v4
