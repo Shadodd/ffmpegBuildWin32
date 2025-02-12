@@ -39,7 +39,7 @@ jobs:
         echo "Checking for required libraries..."
         
         # Устанавливаем переменную окружения для поиска библиотек
-        export LD_LIBRARY_PATH=/usr/local/lib:$LD_LIBRARY_PATH
+        export LD_LIBRARY_PATH=/usr/lib/x86_64-linux-gnu:$LD_LIBRARY_PATH
 
         # Проверяем наличие библиотек
         if ! ldconfig -p | grep -q 'libavcodec.so'; then
@@ -55,6 +55,7 @@ jobs:
           exit 1
         fi
         echo "All required libraries are present."
+
     - name: Clone FFmpeg
       run: |
         git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
@@ -81,9 +82,9 @@ jobs:
         cd ffmpeg
         mkdir -p build_artifacts
         cp /usr/local/bin/ffmpeg build_artifacts/
-        cp /usr/local/lib/libavcodec.so build_artifacts/
-        cp /usr/local/lib/libavformat.so build_artifacts/
-        cp /usr/local/lib/libavutil.so build_artifacts/
+        cp /usr/lib/x86_64-linux-gnu/libavcodec.so build_artifacts/
+        cp /usr/lib/x86_64-linux-gnu/libavformat.so build_artifacts/
+        cp /usr/lib/x86_64-linux-gnu/libavutil.so build_artifacts/
         tar -czf build_artifacts/ffmpeg-build.tar.gz -C build_artifacts .
 
     - name: Upload build artifacts
