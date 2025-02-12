@@ -29,7 +29,7 @@ jobs:
           libfdk-aac-dev \
           libx264-dev \
           libx265-dev \
-          nasm  # Добавление установки nasm
+          nasm
 
     - name: Clone FFmpeg
       run: |
@@ -47,6 +47,17 @@ jobs:
         cd ffmpeg
         make -j$(nproc)
         sudo make install
+
+    - name: Archive FFmpeg build
+      run: |
+        cd ffmpeg
+        tar -czf ffmpeg-build.tar.gz /usr/local/bin/ffmpeg /usr/local/lib/libavcodec.so /usr/local/lib/libavformat.so /usr/local/lib/libavutil.so  # Архивируем бинарники и библиотеки
+
+    - name: Upload FFmpeg build artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: ffmpeg-build
+        path: ffmpeg/ffmpeg-build.tar.gz  # Указываем путь к архиву для загрузки
 
     - name: Verify FFmpeg build
       run: |
