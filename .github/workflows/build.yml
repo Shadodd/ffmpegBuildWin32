@@ -63,7 +63,7 @@ jobs:
         tar -czf build_artifacts/ffmpeg-build.tar.gz -C build_artifacts .
 
     - name: Upload FFmpeg build artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: ffmpeg-build
         path: ffmpeg/build_artifacts/ffmpeg-build.tar.gz
