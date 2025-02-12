@@ -54,7 +54,7 @@ jobs:
         tar -czf ffmpeg-build.tar.gz /usr/local/bin/ffmpeg /usr/local/lib/libavcodec.so /usr/local/lib/libavformat.so /usr/local/lib/libavutil.so  # Архивируем бинарники и библиотеки
 
     - name: Upload FFmpeg build artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v2  # Используем актуальную версию v2
       with:
         name: ffmpeg-build
         path: ffmpeg/ffmpeg-build.tar.gz  # Указываем путь к архиву для загрузки
