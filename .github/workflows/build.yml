@@ -11,31 +11,36 @@ jobs:
     runs-on: ubuntu-latest
 
     steps:
-      - name: Checkout репозиторий
+      - name: Checkout репозитория
         uses: actions/checkout@v4
 
       - name: Установка зависимостей
         run: |
           sudo apt update
-          sudo apt install -y mingw-w64 nasm yasm pkg-config
+          sudo apt install -y mingw-w64 nasm yasm pkg-config make automake autoconf git
 
       - name: Клонирование FFmpeg
-        run: git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
+        run: |
+          git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
+          cd ffmpeg
+          git checkout release/6.1  # Используем стабильную версию
 
-      - name: Сборка FFmpeg 32-bit
+      - name: Конфигурация сборки
         run: |
           cd ffmpeg
           ./configure --arch=x86 --target-os=mingw32 --cross-prefix=i686-w64-mingw32- \
-            --enable-gpl --enable-version3 --disable-programs \
-            --enable-encoder=wmv3 --enable-decoder=wmv3 \
-            --enable-muxer=asf --enable-demuxer=asf \
-            --enable-static --disable-shared --disable-doc
-          make -j$(nproc)
+            --enable-gpl --enable-version3 --enable-static --disable-shared --disable-doc \
+            --enable-encoder=wmv3 --enable-decoder=wmv3 --enable-muxer=asf --enable-demuxer=asf
 
-      - name: Архивация
+      - name: Компиляция FFmpeg
         run: |
           cd ffmpeg
-          tar -czf ffmpeg-32bit.tar.gz ffmpeg
+          make -j$(nproc)
+
+      - name: Архивация результата
+        run: |
+          cd ffmpeg
+          tar -czf ffmpeg-32bit.tar.gz ffmpeg.exe
 
       - name: Загрузка артефакта
         uses: actions/upload-artifact@v4
