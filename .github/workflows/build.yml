@@ -1,72 +1,54 @@
-name: Build FFmpeg for 32-bit Windows on Linux
+name: Build FFmpeg 32-bit
 
 on:
   push:
     branches:
       - main
+  workflow_dispatch:
 
 jobs:
   build:
     runs-on: ubuntu-latest
 
     steps:
-    - name: Checkout code
-      uses: actions/checkout@v2
+      - name: Checkout репозитория
+        uses: actions/checkout@v4
 
-    - name: Install dependencies
-      run: |
-        sudo apt-get update
-        sudo apt-get install -y \
-          autoconf \
-          automake \
-          build-essential \
-          cmake \
-          git \
-          libtool \
-          pkg-config \
-          texinfo \
-          zlib1g-dev \
-          libvpx-dev \
-          libfdk-aac-dev \
-          libx264-dev \
-          libx265-dev \
-          nasm \
-          yasm \
-          mingw-w64-i686-toolchain # Устанавливаем MinGW для 32-битных Windows
+      - name: Установка зависимостей
+        run: |
+          sudo apt update
+          sudo apt install -y mingw-w64 nasm yasm pkg-config make automake autoconf git \
+                             libvpx-dev libx264-dev libx265-dev libfdk-aac-dev libmp3lame-dev \
+                             libopus-dev libvorbis-dev libass-dev
 
-    - name: Clone FFmpeg
-      run: |
-        git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
-        cd ffmpeg
-        git checkout release/4.4  # Выбираем стабильную ветку
+      - name: Клонирование FFmpeg
+        run: |
+          git clone https://git.ffmpeg.org/ffmpeg.git ffmpeg
+          cd ffmpeg
+          git checkout release/6.1  # Используем стабильную версию
 
-    - name: Configure FFmpeg with WMV3 support for 32-bit Windows
-      run: |
-        cd ffmpeg
-        ./configure --prefix=/usr/local --target-os=mingw32 --arch=i386 --enable-encoder=wmv3 --enable-static --disable-shared --cross-prefix=i686-w64-mingw32-
+      - name: Конфигурация сборки
+        run: |
+          cd ffmpeg
+          ./configure --arch=x86 --target-os=mingw32 --cross-prefix=i686-w64-mingw32- \
+            --enable-gpl --enable-version3 --enable-static --disable-shared --disable-doc \
+            --enable-encoder=wmv3 --enable-decoder=wmv3 --enable-muxer=asf --enable-demuxer=asf \
+            --enable-encoder=wmv2 --enable-decoder=wmv2 --enable-muxer=wmv \
+            --enable-libx264 --enable-libx265 --enable-libmp3lame --enable-libopus --enable-libvorbis \
+            --enable-libvpx --enable-libass --enable-fdk-aac
 
-    - name: Build FFmpeg for 32-bit Windows
-      run: |
-        cd ffmpeg
-        make -j$(nproc)
-        make install
+      - name: Компиляция FFmpeg
+        run: |
+          cd ffmpeg
+          make -j$(nproc)
 
-    - name: Verify FFmpeg build
-      run: |
-        i686-w64-mingw32-ffmpeg -codecs | grep wmv3
+      - name: Архивация результата
+        run: |
+          cd ffmpeg
+          tar -czf ffmpeg-32bit.tar.gz ffmpeg.exe
 
-    - name: Create build artifacts
-      run: |
-        cd ffmpeg
-        mkdir -p build_artifacts
-        cp /usr/local/bin/i686-w64-mingw32-ffmpeg build_artifacts/
-        cp /usr/local/lib/i686-w64-mingw32/libavcodec.a build_artifacts/
-        cp /usr/local/lib/i686-w64-mingw32/libavformat.a build_artifacts/
-        cp /usr/local/lib/i686-w64-mingw32/libavutil.a build_artifacts/
-        tar -czf build_artifacts/ffmpeg-build.tar.gz -C build_artifacts .
-
-    - name: Upload build artifacts
-      uses: actions/upload-artifact@v4
-      with:
-        name: ffmpeg-build
-        path: ffmpeg/build_artifacts/ffmpeg-build.tar.gz
+      - name: Загрузка артефакта
+        uses: actions/upload-artifact@v4
+        with:
+          name: ffmpeg-32bit
+          path: ffmpeg/ffmpeg-32bit.tar.gz
