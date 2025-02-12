@@ -18,6 +18,6 @@ jobs:
         sudo apt-get update
         sudo apt-get install -y libavcodec-dev libavformat-dev libavutil.dev
         sudo ls /usr/local/lib/
-        sudofind / -name 'libavcodec.so*'
+        sudo find / -name 'libavcodec.so*'
         sudo find / -name 'libavformat.so*'
         sudo find / -name 'libavutil.so*'
